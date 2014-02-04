@@ -42,23 +42,23 @@
     //reason UITextView always returns true for tracking after the initial focus
     if (!self.dragging && self.userInteractionEnabled && (touchedContentView == nil) ) {
         [touchHandler processTouchesBegan:touches withEvent:event];
- 	}		
-	[super touchesBegan:touches withEvent:event];
+    }       
+    [super touchesBegan:touches withEvent:event];
 }
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event 
 {
     if (!self.dragging && self.userInteractionEnabled && (touchedContentView == nil) ) {
         [touchHandler processTouchesMoved:touches withEvent:event];
-    }		
-	[super touchesMoved:touches withEvent:event];
+    }       
+    [super touchesMoved:touches withEvent:event];
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event 
 {
     if (!self.dragging && self.userInteractionEnabled && (touchedContentView == nil) ) {
         [touchHandler processTouchesEnded:touches withEvent:event];
-    }		
-	[super touchesEnded:touches withEvent:event];
+    }       
+    [super touchesEnded:touches withEvent:event];
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event 
@@ -79,8 +79,8 @@
 
 -(void)frameSizeChanged:(CGRect)frame bounds:(CGRect)bounds
 {
-	[[self textWidgetView] sizeToFit];
-	[super frameSizeChanged:frame bounds:bounds];
+    [[self textWidgetView] sizeToFit];
+    [super frameSizeChanged:frame bounds:bounds];
 }
 
 -(UIView<UITextInputTraits>*)textWidgetView
@@ -127,44 +127,44 @@
 
 -(void)setEnabled_:(id)value
 {
-	[(UITextView *)[self textWidgetView] setEditable:[TiUtils boolValue:value]];
+    [(UITextView *)[self textWidgetView] setEditable:[TiUtils boolValue:value]];
 }
 
 -(void)setScrollable_:(id)value
 {
-	[(UITextView *)[self textWidgetView] setScrollEnabled:[TiUtils boolValue:value]];
+    [(UITextView *)[self textWidgetView] setScrollEnabled:[TiUtils boolValue:value]];
 }
 
 -(void)setEditable_:(id)editable
 {
-	[(UITextView *)[self textWidgetView] setEditable:[TiUtils boolValue:editable]];
+    [(UITextView *)[self textWidgetView] setEditable:[TiUtils boolValue:editable]];
 }
 
 -(void)setAutoLink_:(id)type_
 {
-	[(UITextView *)[self textWidgetView] setDataDetectorTypes:[TiUtils intValue:type_ def:UIDataDetectorTypeNone]];
+    [(UITextView *)[self textWidgetView] setDataDetectorTypes:[TiUtils intValue:type_ def:UIDataDetectorTypeNone]];
 }
 
 -(void)setBorderStyle_:(id)value
 {
-	//TODO
+    //TODO
 }
 
 -(void)setScrollsToTop_:(id)value
 {
-	[(UITextView *)[self textWidgetView] setScrollsToTop:[TiUtils boolValue:value def:YES]];
+    [(UITextView *)[self textWidgetView] setScrollsToTop:[TiUtils boolValue:value def:YES]];
 }
 
 -(void)setBackgroundColor_:(id)color
 {
-	[[self textWidgetView] setBackgroundColor:[Webcolor webColorNamed:color]];
+    [[self textWidgetView] setBackgroundColor:[Webcolor webColorNamed:color]];
 }
 
 #pragma mark Public Method
 
 -(BOOL)hasText
 {
-	return [(UITextView *)[self textWidgetView] hasText];
+    return [(UITextView *)[self textWidgetView] hasText];
 }
 
 -(BOOL)resignFirstResponder
@@ -199,6 +199,8 @@
 
 
 
+
+
 // *** edited by QIN CHUAN @ 20131002 ***
 // **************************************
 - (NSNumber*) getContentHeight
@@ -219,13 +221,13 @@
 
 
 
-
 //TODO: scrollRangeToVisible
 
 #pragma mark UITextViewDelegate
 
 - (BOOL)textView:(UITextView *)textView shouldInteractWithURL:(NSURL *)URL inRange:(NSRange)characterRange
 {
+    BOOL handleLinksSet = ([[self proxy] valueForUndefinedKey:@"handleLinks"] != nil);
     if([(TiViewProxy*)[self proxy] _hasListeners:@"link" checkParent:NO]) {
         NSDictionary *eventDict = [NSDictionary dictionaryWithObjectsAndKeys:
                                    [URL absoluteString], @"url",
@@ -233,43 +235,48 @@
                                    nil];
         [[self proxy] fireEvent:@"link" withObject:eventDict propagate:NO reportSuccess:NO errorCode:0 message:nil];
     }
-    return handleLinks;
+    if (handleLinksSet) {
+        return handleLinks;
+    } else {
+        return [[UIApplication sharedApplication] canOpenURL:URL];
+    }
+    //return handleLinks;
 }
 
 - (void)textViewDidBeginEditing:(UITextView *)tv
 {
-	[self textWidget:tv didFocusWithText:[tv text]];
+    [self textWidget:tv didFocusWithText:[tv text]];
 }
 
 - (void)textViewDidEndEditing:(UITextView *)tv
 {
-	NSString * text = [(UITextView *)textWidgetView text];
+    NSString * text = [(UITextView *)textWidgetView text];
 
-	if (returnActive && [self.proxy _hasListeners:@"return"])
-	{
-		[self.proxy fireEvent:@"return" withObject:[NSDictionary dictionaryWithObject:text forKey:@"value"]];
-	}	
+    if (returnActive && [self.proxy _hasListeners:@"return"])
+    {
+        [self.proxy fireEvent:@"return" withObject:[NSDictionary dictionaryWithObject:text forKey:@"value"]];
+    }   
 
-	returnActive = NO;
+    returnActive = NO;
 
-	[self textWidget:tv didBlurWithText:text];
+    [self textWidget:tv didBlurWithText:text];
 }
 
 - (void)textViewDidChange:(UITextView *)tv
 {
-	[(TiUITextAreaProxy *)[self proxy] noteValueChange:[(UITextView *)textWidgetView text]];
+    [(TiUITextAreaProxy *)[self proxy] noteValueChange:[(UITextView *)textWidgetView text]];
 }
 
 - (void)textViewDidChangeSelection:(UITextView *)tv
 {
-	if ([self.proxy _hasListeners:@"selected"])
-	{
-		NSRange range = tv.selectedRange;
+    if ([self.proxy _hasListeners:@"selected"])
+    {
+        NSRange range = tv.selectedRange;
         NSDictionary* rangeDict = [NSDictionary dictionaryWithObjectsAndKeys:NUMINT(range.location),@"location",
                                    NUMINT(range.length),@"length", nil];
-		NSDictionary *event = [NSDictionary dictionaryWithObject:rangeDict forKey:@"range"];
-		[self.proxy fireEvent:@"selected" withObject:event];
-	}
+        NSDictionary *event = [NSDictionary dictionaryWithObject:rangeDict forKey:@"range"];
+        [self.proxy fireEvent:@"selected" withObject:event];
+    }
     //TIMOB-15401. Workaround for UI artifact
     if ((tv == textWidgetView) && (!NSEqualRanges(tv.selectedRange, lastSelectedRange))) {
         lastSelectedRange.location = tv.selectedRange.location;
@@ -280,22 +287,22 @@
 
 - (BOOL)textViewShouldEndEditing:(UITextView *)tv
 {
-	return YES;
+    return YES;
 }
 
 - (BOOL)textView:(UITextView *)tv shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
 {
-	NSString *curText = [[tv text] stringByReplacingCharactersInRange:range withString:text];
-	if ([text isEqualToString:@"\n"])
-	{
-		[self.proxy fireEvent:@"return" withObject:[NSDictionary dictionaryWithObject:[(UITextView *)textWidgetView text] forKey:@"value"]];
-		if (suppressReturn)
-		{
-			[tv resignFirstResponder];
-			return NO;
-		}
-	}
-	
+    NSString *curText = [[tv text] stringByReplacingCharactersInRange:range withString:text];
+    if ([text isEqualToString:@"\n"])
+    {
+        [self.proxy fireEvent:@"return" withObject:[NSDictionary dictionaryWithObject:[(UITextView *)textWidgetView text] forKey:@"value"]];
+        if (suppressReturn)
+        {
+            [tv resignFirstResponder];
+            return NO;
+        }
+    }
+    
     if ( (maxLength > -1) && ([curText length] > maxLength) ) {
         [self setValue_:curText];
         return NO;
@@ -309,8 +316,8 @@
         }
     }
 
-	[(TiUITextAreaProxy *)self.proxy noteValueChange:curText];
-	return TRUE;
+    [(TiUITextAreaProxy *)self.proxy noteValueChange:curText];
+    return TRUE;
 }
 
 -(void)setHandleLinks_:(id)args
